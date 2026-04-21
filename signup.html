@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrafficSense | Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <h2>TrafficSense</h2>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="tracking.html">Live Tracking</a></li>
+            <li><a href="info.html">Information</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="login.html">Login</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section>
+            <h2>Create an Account</h2>
+            <p>Join TrafficSense to save your favorite routes.</p>
+            
+            <form id="signupForm">
+                <div>
+                    <label for="newName">Full Name:</label>
+                    <input type="text" id="newName" required>
+                </div>
+                <div>
+                    <label for="newEmail">Email Address:</label>
+                    <input type="email" id="newEmail" required>
+                </div>
+                <div>
+                    <label for="newPassword">Password:</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <div>
+                    <label for="confirmPassword">Confirm Password:</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                
+                <button type="submit">Register Now</button>
+            </form>
+
+            <p>Already have an account? <a href="login.html">Log in here</a>.</p>
+        </section>
+    </main>
+
+    <script src="signup.js"></script>
+</body>
+</html>
