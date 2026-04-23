@@ -21,13 +21,12 @@ signupForm.addEventListener('submit', function(event) {
 
     registerButton.innerText = "Creating Account...";
 
-    // 2. Send the new user data to the Java Spring Boot server
+    // 2. Send the new user data to the Python backend
     fetch('http://localhost:8080/api/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        // We send the name, email, and password. Java will use SQL to create the user!
         body: JSON.stringify({
             name: userName,
             email: userEmail,
@@ -35,10 +34,14 @@ signupForm.addEventListener('submit', function(event) {
         })
     })
     .then(response => {
+        // 3. Make our error handling much smarter!
         if (response.ok) {
             return response.json(); 
+        } else if (response.status === 400) {
+            // This catches the exact error Python sends if the email is a duplicate
+            throw new Error("This email is already registered. Try logging in!");
         } else {
-            throw new Error("Email might already be registered.");
+            throw new Error("Could not connect to the Python server.");
         }
     })
     .then(data => {
@@ -47,12 +50,13 @@ signupForm.addEventListener('submit', function(event) {
         
         alert("Registration successful! You can now log in.");
         
-        // Automatically route them to the login page
         window.location.href = "login.html"; 
     })
     .catch(error => {
+        // 4. Display the exact error message we created above
         console.error("Sign up failed:", error);
         registerButton.innerText = "Register Now";
-        alert("Registration failed. Ensure the Spring Boot server is running or try a different email.");
+        
+        alert("Error: " + error.message + "\n(If the server is off, ensure Uvicorn is running in your terminal)");
     });
-});
+}); // <--- THIS IS THE MISSING PIECE THAT FIXES THE FILE!

@@ -1,44 +1,84 @@
-// 1. We tell JavaScript to find the button and the input box using their IDs (you'll need to add an id="trackBtn" to your button in HTML)
 const trackButton = document.querySelector('button[type="submit"]');
 const locationInput = document.getElementById('locationInput');
 
+// ==========================================
+// 1. INITIALIZE THE MAP
+// ==========================================
+// We tell Leaflet to load inside our 'map-container' div.
+// We set the default view coordinates to the center of India, zoomed out (level 5).
+const map = L.map('map-container').setView([20.5937, 78.9629], 5);
+
+// Add the visual street tiles from OpenStreetMap
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// A variable to remember our map marker, so we can delete the old one when searching a new city
+let currentMarker = null;
+
+// ==========================================
+// 2. THE SEARCH LOGIC
+// ==========================================
 trackButton.addEventListener('click', function(event) {
     event.preventDefault(); 
     
-    // 1. Grab the city the user typed
     let userCity = locationInput.value;
-    
-    // 2. Change the button text so the user knows it's working
+    if (!userCity) return; // Don't do anything if the box is empty
+
     trackButton.innerText = "Scanning...";
 
-    // ---------------------------------------------------------
-    // THE NEW FETCH COMMAND: Sending the data to Java!
-    // ---------------------------------------------------------
-    
-    // This URL is where your teammate's Spring Boot server will be running on their computer
+    // First: Ask our Python Backend for the Traffic Level
     fetch('http://localhost:8080/api/check-traffic', { 
-        method: 'POST', // 'POST' means we are SENDING data to the server
-        headers: {
-            'Content-Type': 'application/json' // Telling Java we are sending JSON data
-        },
-        // We package the city name into a JSON format
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ location: userCity }) 
     })
-    .then(response => response.json()) // 3. Wait for the Java server to reply
-    .then(javaData => {
-        // 4. This block runs when Java successfully replies!
-        console.log("Success! The Java server replied with:", javaData);
+    .then(response => response.json()) 
+    .then(backendData => {
         
-        // Change the button back to normal
-        trackButton.innerText = "Track Traffic";
-        
-        // Show the real result from Java to the user!
-        alert("Java says the traffic in " + userCity + " is: " + javaData.trafficLevel);
+        let trafficLevel = backendData.trafficLevel;
+
+        // Second: Ask the public Nominatim API for the GPS Coordinates of the city
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${userCity}`)
+        .then(res => res.json())
+        .then(geoData => {
+            trackButton.innerText = "Track Traffic";
+
+            // If the map API couldn't find the city, stop here.
+            if (geoData.length === 0) {
+                alert("Could not find that location on the map!");
+                return;
+            }
+
+            // Extract the exact Latitude and Longitude from the API response
+            let lat = geoData[0].lat;
+            let lon = geoData[0].lon;
+
+            // Animate the map camera flying to the new city!
+            map.flyTo([lat, lon], 13);
+
+            // If there is already a pin on the map from a previous search, remove it
+            if (currentMarker !== null) {
+                map.removeLayer(currentMarker);
+            }
+
+            // Drop a new map marker at the coordinates
+            currentMarker = L.marker([lat, lon]).addTo(map);
+            
+            // Attach a beautiful popup bubble to the marker displaying our Python data!
+            currentMarker.bindPopup(`
+                <div style="text-align: center;">
+                    <strong style="font-size: 16px;">${userCity.toUpperCase()}</strong><br>
+                    Current Traffic:<br>
+                    <b style="color: #2563eb; font-size: 14px;">${trafficLevel}</b>
+                </div>
+            `).openPopup();
+        });
     })
     .catch(error => {
-        // 5. This runs if the Java server is turned off or crashes
-        console.error("Error: Could not reach the Java server.", error);
+        console.error("Error:", error);
         trackButton.innerText = "Server Offline";
-        alert("Oops! Make sure your teammate has the Spring Boot server running!");
+        alert("Make sure your Python server is running!");
     });
 });
