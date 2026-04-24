@@ -22,7 +22,7 @@ signupForm.addEventListener('submit', function(event) {
     registerButton.innerText = "Creating Account...";
 
     // 2. Send the new user data to the Python backend
-    fetch('http://localhost:8080/api/register', {
+    fetch('https://practice1-syjs.onrender.com/api/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

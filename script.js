@@ -29,7 +29,7 @@ trackButton.addEventListener('click', function(event) {
     trackButton.innerText = "Scanning...";
 
     // First: Ask our Python Backend for the Traffic Level
-    fetch('http://localhost:8080/api/check-traffic', { 
+    fetch('https://practice1-syjs.onrender.com/api/check-traffic', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ location: userCity }) 

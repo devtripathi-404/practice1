@@ -16,7 +16,7 @@ loginForm.addEventListener('submit', function(event) {
     loginButton.innerText = "Authenticating...";
 
     // 4. Send the data to the Java Spring Boot server
-    fetch('http://localhost:8080/api/login', {
+    fetch('https://practice1-syjs.onrender.com/api/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
